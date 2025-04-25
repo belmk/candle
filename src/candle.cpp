@@ -11,12 +11,14 @@ enum class TokenType {t_RETURN, t_INTEGER, t_PRINT_ASCII, t_PRINT_INTEGER};
 struct Token {
     TokenType type;
     std::optional<std::string> value;
+    int line_number;
 };
 
 
 std::string parse_file(char*& path);                                                                        // Reads the file and turns it into a string
 std::vector<Token> tokenize(const std::string& data);                                                       // Creates tokens based on the code from the file
 void print_tokens(const std::vector<Token>& tokens);                                                        // Prints the tokens to the terminal (debug only)
+void validate_tokens(const std::vector<Token>& tokens);                                                     // Validates the input and generates error messages
 void interpret_to_cpp(const std::vector<Token>& tokens, const std::string& output_path = "output.cpp");     // Creates a .cpp file that gets compiled into the final .exe
 
 
@@ -35,6 +37,8 @@ int main(int argc, char** argv){
 
     print_tokens(tokens);                           // Useful for debugging
 
+    validate_tokens(tokens);
+
     interpret_to_cpp(tokens);
 
     int compilation_result = system("g++ output.cpp -o output");
@@ -43,7 +47,12 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    std::cin.get();
+    if (std::remove("output.cpp") != 0) {
+        std::cerr << "Failed to delete temporary file output.cpp!\n";
+    }
+
+    //system("output.exe");
+
     return 0;
 }
 
@@ -96,6 +105,8 @@ std::vector<Token> tokenize(const std::string& data) {       // Create tokens us
             continue;
         }
 
+        token.line_number = line_num;
+
         std::string value;
         std::getline(line_stream, value); 
         if (!value.empty() && value[0] == ' ') value.erase(0, 1); 
@@ -107,6 +118,41 @@ std::vector<Token> tokenize(const std::string& data) {       // Create tokens us
 
     return tokens;
 }
+
+
+void validate_tokens(const std::vector<Token>& tokens) {
+
+    for (const auto& token : tokens) {
+        if (token.type == TokenType::t_RETURN) {
+            std::istringstream iss(token.value.value());
+            std::string word;
+            int count = 0;
+            while (iss >> word) count++;
+
+            if (count != 1) {
+                std::cerr << "Error on line " << token.line_number
+                          << ": 'return' expects exactly one numeric argument.\n";
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (token.type == TokenType::t_PRINT_ASCII) {
+            std::istringstream iss(token.value.value());
+            std::string ascii_code;
+            while (iss >> ascii_code) {
+                int val = std::stoi(ascii_code);
+                if (val < 0 || val > 127) {
+                    std::cerr << "Error on line " << token.line_number
+                              << ": ASCII value out of range (0-127): " << val << '\n';
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+
+
+    }
+}
+
+
 
 
 void interpret_to_cpp(const std::vector<Token>& tokens, const std::string& output_path){
@@ -146,17 +192,18 @@ void print_tokens(const std::vector<Token>& tokens) {
         std::string type_str;
 
         switch (token.type) {
-            case TokenType::t_RETURN:      type_str = "RETURN"; break;
+            case TokenType::t_RETURN:            type_str = "RETURN"; break;
             case TokenType::t_PRINT_ASCII:       type_str = "PRINT_ASCII"; break;
-            case TokenType::t_PRINT_INTEGER:       type_str = "PRINT_INTEGER"; break;
-            case TokenType::t_INTEGER:   type_str = "INTEGER"; break;
-            default:                       type_str = "UNKNOWN"; break;
+            case TokenType::t_PRINT_INTEGER:     type_str = "PRINT_INTEGER"; break;
+            case TokenType::t_INTEGER:           type_str = "INTEGER"; break;
+            default:                             type_str = "UNKNOWN"; break;
         }
 
         std::cout << "Token: " << type_str;
         if (token.value.has_value()) {
             std::cout << ", Value: \"" << token.value.value() << "\"";
         }
+        std::cout << ", Line: " << token.line_number;
         std::cout << '\n';
     }
 }
