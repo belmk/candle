@@ -1,5 +1,8 @@
 #include "../include/tokenizer.hpp"
 
+bool is_number(const std::string& s);
+
+
 std::vector<Token> tokenize(const std::string& data) {       // Create tokens using the input code string
     std::vector<Token> tokens;
     std::istringstream stream(data);
@@ -17,21 +20,49 @@ std::vector<Token> tokenize(const std::string& data) {       // Create tokens us
         std::string opcode;
         line_stream >> opcode;
 
-        Token token;                                                // TODO: Make the comment-case-check first so that after that you know you have an integer,
-                                                                    // so that you can turn it to an int and then use a switch
-        if (opcode == "0") {                                        // Return opcode case
-            token.type = TokenType::t_RETURN; token.min_args = 1; token.max_args = 1;
-        } else if (opcode == "1") {                                 // Character print opcode case
-            token.type = TokenType::t_PRINT_ASCII;  token.min_args = 1; token.max_args = std::nullopt;                
-        } else if (opcode.at(0) == '@'){                            // Comment opcode case, ignore line
+        if(opcode.at(0) == '@'){                                    // Comment check, increment line num and ignore
             line_num++;
             continue;
         }
-        else {
-            std::cerr << "Invalid or unknown operand in line " << line_num << ": \"" << opcode << "\" " << std::endl;
+
+        if(!is_number(opcode)){                                     // Checking for a non-numeric value in order to safely use stoi after
+            std::cerr << "Invalid operand in line " << line_num << ": \"" << opcode << "\" " << std::endl;
             exit(EXIT_FAILURE);
             continue;
         }
+
+        Token token;                                                
+        int opcode_integer = std::stoi(opcode);                                  // We now know its a numeric value so we can use a switch statement
+
+        switch(opcode_integer){
+
+            case 0:                                                 // Return opcode
+            token.type = TokenType::t_RETURN;               token.min_args = 1; token.max_args = 1;
+            break;
+
+            case 1:                                                 // Print opcode
+            token.type = TokenType::t_PRINT_ASCII;          token.min_args = 1; token.max_args = std::nullopt;                
+            break;
+
+            case 2:                                                 // User input opcode
+            token.type = TokenType::t_USER_INPUT;           token.min_args = 0; token.max_args = 0;
+            break;
+
+            case 3:                                                 // Int stack peek opcode
+            token.type = TokenType::t_INT_STACK_PEEK;       token.min_args = 0; token.max_args = 0;
+            break;
+
+            case 4:                                                 // Int stack arithmetic opcode
+            token.type = TokenType::t_INT_STACK_ARITHMETIC; token.min_args = 2; token.max_args = 2;
+            break;
+
+            default:                                                // Non-defined opcode
+            std::cerr << "Unknown operand in line " << line_num << ": \"" << opcode << "\" " << std::endl;
+            exit(EXIT_FAILURE);
+            break;
+        }
+
+
 
         token.line_number = line_num;
 
@@ -45,4 +76,9 @@ std::vector<Token> tokenize(const std::string& data) {       // Create tokens us
     }
 
     return tokens;
+}
+
+
+bool is_number(const std::string& s) {
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
 }

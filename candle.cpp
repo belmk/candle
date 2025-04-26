@@ -51,9 +51,12 @@ void print_tokens(const std::vector<Token>& tokens) {
         std::string type_str;
 
         switch (token.type) {
-            case TokenType::t_RETURN:            type_str = "RETURN"; break;
-            case TokenType::t_PRINT_ASCII:       type_str = "PRINT_ASCII"; break;
-            default:                             type_str = "UNKNOWN"; break;
+            case TokenType::t_RETURN:               type_str = "RETURN"; break;
+            case TokenType::t_PRINT_ASCII:          type_str = "PRINT_ASCII"; break;
+            case TokenType::t_USER_INPUT:           type_str = "USER_INPUT"; break;
+            case TokenType::t_INT_STACK_PEEK:       type_str = "INT_STACK_PEEK"; break;
+            case TokenType::t_INT_STACK_ARITHMETIC: type_str = "INT_STACK_ARITHMETIC"; break;
+            default:                                type_str = "UNKNOWN"; break;
         }
 
         std::cout << "Token: " << type_str;

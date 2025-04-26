@@ -4,7 +4,12 @@
 #include <optional>
 #include <string>
 
-enum class TokenType { t_RETURN, t_PRINT_ASCII };
+enum class TokenType { t_RETURN, 
+    t_PRINT_ASCII, 
+    t_USER_INPUT, 
+    t_INT_STACK_PEEK,
+    t_INT_STACK_ARITHMETIC
+    };
 
 struct Token {
     TokenType type;
