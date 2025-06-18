@@ -1,0 +1,20 @@
+@ Print "Enter two numbers:"
+1 69 110 116 101 114 32 116 119 111 32 110 117 109 98 101 114 115 58 10 
+
+@ User input 1
+2
+
+@ User input 2
+2
+
+@ Add the two numbers on the stack non-destructively, meaning the operands don't get popped
+4 0 0
+
+@ Print "Their sum is:"
+1 84 104 101 105 114 32 115 117 109 32 105 115 58 32 
+
+@ Peek stack to access the pushed result of the sum
+3
+
+@ Return 0
+0 0

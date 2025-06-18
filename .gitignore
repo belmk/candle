@@ -33,6 +33,8 @@
 
 # Custom .cndl files
 *.cndl
+!examples/hello_world.cndl
+!examples/stack_example.cndl
 
 #.vscode folder
 .vscode/
